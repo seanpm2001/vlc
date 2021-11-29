@@ -1,5 +1,5 @@
 /*****************************************************************************
- * vout_window.c: vout-specific window management
+ * video_window.c: vout-specific window management
  *****************************************************************************
  * Copyright © 2014-2021 Rémi Denis-Courmont
  *
@@ -26,13 +26,29 @@
 
 #include <vlc_common.h>
 #include <vlc_vout_window.h>
-//#include <libvlc.h>
 #include <vlc_vout.h>
 #include <vlc_vout_display.h>
-#include "window.h"
+#include "video_window.h"
 #include "vout_internal.h"
 
 #define DOUBLE_CLICK_TIME VLC_TICK_FROM_MS(300)
+
+struct vout_window_ack_data {
+    vout_window_t *window;
+    vout_window_ack_cb callback;
+    unsigned width;
+    unsigned height;
+    void *opaque;
+};
+
+static void vout_window_Ack(void *data)
+{
+    struct vout_window_ack_data *cb_data = data;
+
+    if (cb_data->callback != NULL)
+        cb_data->callback(cb_data->window, cb_data->width, cb_data->height,
+                          cb_data->opaque);
+}
 
 typedef struct vout_display_window
 {
